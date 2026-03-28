@@ -1,0 +1,96 @@
+Bioinformatic Analysis Pipeline
+Version: Reproducible analysis for microbiome study
+Paper Title: Bilophila wadsworthia inhibits lifestyle intervention response in Gestational Diabetes Mellitus via L-glutamine regulation
+1. Sequencing Data
+Raw sequencing data were submitted to the NCBI SRA database under the accession number: PRJNA898150.
+
+2. Analysis Platform
+Data analysis was performed using the Majorbio Cloud (www.majorbio.com).
+Reference: Zhao, Jianhua.et al. 2026. Majorbio Cloud 2026 Provides Comprehensive Analysis Workflows for Microbiome. iMeta e70109. doi:10.1002/imt2.70109.
+
+3. Data Quality Control
+3.1. Adapter trimming was performed at both 5' and 3' ends using fastp[1] v0.20.0 (https://github.com/OpenGene/fastp).
+3.2. Reads with length < 50 bp, average base quality < 20, or containing ambiguous N bases were removed. High-quality paired-end and single-end reads were retained.
+3.3. Reads were aligned to the host DNA sequence using BWA[2] v0.7.9a (http://bio-bwa.sourceforge.net/), and highly similar host-contaminated reads were removed.
+
+4. De Novo Assembly
+Clean reads were assembled using MEGAHIT[3] v1.1.2 (https://github.com/voutcn/megahit).
+Contigs ≥ 300 bp were retained for subsequent analysis.
+
+5. Gene Prediction
+Open reading frames (ORFs) were predicted from assembled contigs using MetaGene[4] (http://metagene.cb.k.u-tokyo.ac.jp/).
+Only genes with nucleotide length ≥ 100 bp were kept and translated into amino acid sequences.
+
+6. Non-Redundant Gene Catalog Construction
+All predicted genes were clustered using CD-HIT[5] v4.6.1 (http://www.bioinformatics.org/cd-hit/) with parameters:
+- 90% identity
+- 90% coverage
+The longest sequence in each cluster was selected as the representative to construct a non-redundant gene set.
+
+7. Gene Abundance Calculation
+High-quality reads of each sample were mapped to the non-redundant gene set using SOAPaligner[6] v2.21 (http://soap.genomics.org.cn/) with 95% identity.
+Gene abundance in each sample was calculated based on mapped reads.
+
+
+8. Taxonomic and Functional Annotation
+
+8.1 Taxonomic Annotation (NR Database)
+Amino acid sequences were aligned against the NR database using Diamond[7] v0.8.35 (http://diamondsearch.org/index.php) with BLASTP E-value ≤ 1e-5.
+Taxonomic annotations were assigned based on NR taxonomy, and species abundance was calculated as the total abundance of corresponding genes.
+
+8.2 KEGG Functional Annotation
+Amino acid sequences were aligned against the KEGG database using Diamond v0.8.35 with E-value ≤ 1e-5.
+KO and Pathway abundance was calculated as the total abundance of corresponding genes.
+
+9. Diversity Analysis
+
+9.1 Alpha Diversity
+Alpha diversity indices (Sob, Ace, Chao) at the genus level were calculated in R v3.3.1.
+Differences between GDM-R-0w and GDM-NR-0w were tested using Wilcoxon rank-sum test (two-tailed), with FDR adjustment for multiple comparisons.
+
+9.2 Beta Diversity
+Beta diversity distance matrices were calculated using QIIME 2 2020.2.0. NMDS ordination and plotting were performed in R v3.3.1 with the vegan v2.4.3 package.
+
+Beta diversity analysis pipeline:
+A. Community dissimilarity was quantified using the Bray–Curtis distance.
+B. Community structure was visualized using NMDS.
+C. Betadisper was used to test homogeneity of group dispersions.
+D. ANOSIM was used to test the significance of between-group differences.
+
+10. Differential Abundance Analysis
+
+10.1 Species & Function Differences
+Abundances were calculated using read counts.
+Wilcoxon rank-sum test (two-tailed) was applied, with FDR adjustment and 95% confidence intervals estimated by Bootstrap.
+
+10.2 LEfSe Analysis
+LEfSe analysis was performed at http://galaxy.biobakery.org/.
+- Wilcoxon rank-sum test was used to detect differentially abundant species.
+- Linear discriminant analysis (LDA) was used to estimate effect size.
+- Threshold: LDA score > 3.0 at the species level.
+
+10.3 Correlation Heatmap and Mantel Test Network Analysis 
+Analyses were performed in R v4.1.1 using the linket and vegan packages.
+- Correlation tests: Pearson correlation
+- Mantel test: Spearman method, with 999 permutations  
+Significance and visualization rules: 
+- p < 0.05: black lines
+- p < 0.01: orange lines
+Line thickness was scaled by Mantel correlation coefficient r.  
+
+10.4 Volcano Plot Analysis of Differential Non-Targeted Metabolites 
+Volcano plots were constructed in R v4.1.1 using the ggplot2 and ggrepel packages. 
+Thresholds:
+- |logFC| ≥ 0.5
+- p < 0.05
+Upregulated metabolites were colored blue, downregulated metabolites red.
+The geom_text_repel function was used to avoid label overlapping.   
+
+References 
+[1]Chen S, Zhou Y, Chen Y, Gu J. fastp: an ultra-fast all-in-one FASTQ preprocessor. Bioinformatics. 2018;34(17):i884–i890. doi:10.1093/bioinformatics/bty560.
+[2]Li H, Durbin R. Fast and accurate short read alignment with Burrows-Wheeler transform. Bioinformatics. 2009;25(14):1754–1760. doi:10.1093/bioinformatics/btp324.
+[3]Li D, Liu CM, Luo R, Sadakane K, Lam TW. MEGAHIT: an ultra-fast single-node solution for large and complex metagenomics assembly via succinct de Bruijn graph. Bioinformatics. 2015;31(10):1674–1676. doi:10.1093/bioinformatics/btv033.
+[4]Noguchi H, Park J, Takagi T. MetaGene: prokaryotic gene finding from environmental genome shotgun sequences. Nucleic Acids Res. 2006;34(19):5623–5630. doi:10.1093/nar/gkl723.
+[5]Fu L, Niu B, Zhu Z, Wu S, Li W. CD-HIT: accelerated for clustering the next-generation sequencing data. Bioinformatics. 2012;28(23):3150–3152. doi:10.1093/bioinformatics/bts565
+[6]Li R, Li Y, Kristiansen K, Wang J. SOAP: short oligonucleotide alignment program. Bioinformatics. 2008;24(5):713–714. doi:10.1093/bioinformatics/btn025.
+[7] Buchfink B, Xie C, Huson DH. Fast and sensitive protein alignment using DIAMOND. Nat Methods. 2015;12(1):59–60. doi:10.1038/nmeth.3176.
