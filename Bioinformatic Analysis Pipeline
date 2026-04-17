@@ -1,6 +1,8 @@
 Bioinformatic Analysis Pipeline
 Version: Reproducible analysis for microbiome study
 Paper Title: Bilophila wadsworthia inhibits lifestyle intervention response in Gestational Diabetes Mellitus via L-glutamine regulation
+
+Metagenomics data Processing and Analysis
 1. Sequencing Data
 Raw sequencing data were submitted to the NCBI SRA database under the accession number: PRJNA898150.
 
@@ -85,6 +87,28 @@ Thresholds:
 - p < 0.05
 Upregulated metabolites were colored blue, downregulated metabolites red.
 The geom_text_repel function was used to avoid label overlapping.   
+
+Metabolomics Data Processing and Analysis
+Raw LC-MS data were preprocessed using Progenesis QI (Waters, Milford, USA), and a three-dimensional CSV matrix containing sample information, metabolite names, and mass spectral intensities was exported. 
+
+1.Data Preprocessing
+1.1 Peak Filtering & Cleaning: Removed internal standards, known false-positive peaks (noise, column bleed, derivatization reagent peaks), followed by redundancy elimination and peak merging. 
+1.2 Metabolite Identification: Searched against HMDB, Metlin, and the Majorbio local database (MJDB).
+1.3 Data Filtering: Retained metabolic features detected in at least 80% of samples.
+1.4 Missing Value Imputation: Replaced missing values with the minimum intensity. 
+1.5 Normalization: Data normalization by sum.
+1.6 Quality Control: Excluded variables with RSD > 30% in QC samples. 
+1.7 Data Transformation: Log10-transformation to generate the final data matrix.  
+
+2.Statistical Analysis
+• Multivariate Analysis: Principal component analysis (PCA) and orthogonal partial least squares discriminant analysis (OPLS-DA) were performed using the R, with seven-fold cross-validation to assess model stability. 
+• Differential Metabolite Screening: Metabolites with VIP > 1 (OPLS-DA) and p < 0.05 (Student’s t-test) were defined as significantly differential metabolites.
+3.Functional Enrichment Analysis 
+• Pathway enrichment analysis was performed based on the KEGG database to map differential metabolites into biological pathways. 
+• Enrichment analysis was carried out using the Python package scipy.stats to identify key functional pathways associated with experimental groups.
+
+3. Analysis Platform
+Data analysis was performed using the Majorbio Cloud (www.majorbio.com).
 
 References 
 [1]Chen S, Zhou Y, Chen Y, Gu J. fastp: an ultra-fast all-in-one FASTQ preprocessor. Bioinformatics. 2018;34(17):i884–i890. doi:10.1093/bioinformatics/bty560.
